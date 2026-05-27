@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { readdirSync, statSync, existsSync } from 'fs';
+import { join, extname } from 'path';
+
+const PHOTO_EXTS = new Set(['.jpg', '.jpeg', '.png']);
+
+function isPhoto(filename: string): boolean {
+  return PHOTO_EXTS.has(extname(filename).toLowerCase());
+}
+
+function parseShootDate(folder: string): Date {
+  const [mm, dd, yy] = folder.split('-').map(Number);
+  return new Date(2000 + yy, mm - 1, dd);
+}
+
+function formatShootDate(folder: string): string {
+  return parseShootDate(folder).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+const droneDir = join(process.cwd(), 'public', 'drone-photos');
+
+interface Shoot {
+  slug: string;
+  date: string;
+  coverPhoto: string | null;
+}
+
+let shoots: Shoot[] = [];
+
+if (existsSync(droneDir)) {
+  const entries = readdirSync(droneDir);
+  const dateFolders = entries.filter(e => {
+    if (!/^\d{2}-\d{2}-\d{2}$/.test(e)) return false;
+    try { return statSync(join(droneDir, e)).isDirectory(); } catch { return false; }
+  });
+
+  dateFolders.sort((a, b) => parseShootDate(b).getTime() - parseShootDate(a).getTime());
+
+  shoots = dateFolders.map(slug => {
+    const files = readdirSync(join(droneDir, slug)).filter(isPhoto).sort();
+    return {
+      slug,
+      date: formatShootDate(slug),
+      coverPhoto: files[0] ? `/drone-photos/${slug}/${files[0]}` : null,
+    };
+  });
+}
+---
+
+<Layout title="Samuel Lippman — Drone Photography">
+  <main>
+    <header>
+      <h1>Samuel Lippman</h1>
+      <p class="tagline">Drone Photography</p>
+    </header>
+
+    {shoots.length === 0 ? (
+      <p class="empty">No shoots yet.</p>
+    ) : (
+      <div class="grid">
+        {shoots.map(shoot => (
+          <a href={`/${shoot.slug}`} class="card">
+            <div class="cover">
+              {shoot.coverPhoto
+                ? <img src={shoot.coverPhoto} alt={shoot.date} loading="lazy" />
+                : <div class="no-photo" />
+              }
+            </div>
+            <div class="card-info">
+              <span class="card-date">{shoot.date}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 5rem;
+  }
+
+  header {
+    margin-bottom: 3rem;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .tagline {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .card {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .cover {
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .cover img {
+    transition: transform 0.5s ease;
+  }
+
+  .card:hover .cover img {
+    transform: scale(1.04);
+  }
+
+  .no-photo {
+    width: 100%;
+    height: 100%;
+    background: var(--surface);
+  }
+
+  .card-info {
+    padding: 0.85rem 1rem;
+    background: var(--bg);
+  }
+
+  .card-date {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .empty {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    main { padding: 2rem 1rem 3rem; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>

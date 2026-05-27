@@ -1,0 +1,170 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
+import { join, extname, basename } from 'path';
+
+const PHOTO_EXTS = new Set(['.jpg', '.jpeg', '.png']);
+
+function isPhoto(filename: string): boolean {
+  return PHOTO_EXTS.has(extname(filename).toLowerCase());
+}
+
+function parseShootDate(folder: string): Date {
+  const [mm, dd, yy] = folder.split('-').map(Number);
+  return new Date(2000 + yy, mm - 1, dd);
+}
+
+function formatShootDate(folder: string): string {
+  return parseShootDate(folder).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+export async function getStaticPaths() {
+  const { readdirSync: rds, statSync: sts, existsSync: exs } = await import('fs');
+  const { join: pjoin } = await import('path');
+
+  const droneDir = pjoin(process.cwd(), 'public', 'drone-photos');
+  if (!exs(droneDir)) return [];
+
+  return rds(droneDir)
+    .filter(e => {
+      if (!/^\d{2}-\d{2}-\d{2}$/.test(e)) return false;
+      try { return sts(pjoin(droneDir, e)).isDirectory(); } catch { return false; }
+    })
+    .map(slug => ({ params: { shoot: slug } }));
+}
+
+const { shoot } = Astro.params;
+const shootDir = join(process.cwd(), 'public', 'drone-photos', shoot!);
+
+let description: string | null = null;
+const descPath = join(shootDir, 'description.txt');
+if (existsSync(descPath)) {
+  const raw = readFileSync(descPath, 'utf-8').trim();
+  if (raw) description = raw;
+}
+
+const photos = readdirSync(shootDir)
+  .filter(isPhoto)
+  .sort()
+  .map(filename => ({
+    src: `/drone-photos/${shoot}/${filename}`,
+    caption: basename(filename, extname(filename)),
+  }));
+
+const formattedDate = formatShootDate(shoot!);
+---
+
+<Layout title={`${formattedDate} — Samuel Lippman`}>
+  <main>
+    <nav>
+      <a href="/" class="back">← All Shoots</a>
+    </nav>
+
+    <header>
+      <h1>{formattedDate}</h1>
+      {description && <p class="description">{description}</p>}
+    </header>
+
+    <div class="grid">
+      {photos.map(photo => (
+        <figure>
+          <a href={photo.src} target="_blank" rel="noopener" class="photo-link">
+            <div class="photo-wrap">
+              <img src={photo.src} alt={photo.caption} loading="lazy" />
+            </div>
+          </a>
+          <figcaption>{photo.caption}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+
+  nav {
+    margin-bottom: 2.5rem;
+  }
+
+  .back {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  .back:hover { color: var(--text); }
+
+  header {
+    margin-bottom: 2.5rem;
+  }
+
+  h1 {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+
+  .description {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--muted);
+    max-width: 58ch;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.25rem;
+  }
+
+  figure {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .photo-link {
+    display: block;
+    overflow: hidden;
+  }
+
+  .photo-wrap {
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .photo-wrap img {
+    transition: transform 0.45s ease;
+  }
+
+  .photo-link:hover .photo-wrap img {
+    transform: scale(1.03);
+  }
+
+  figcaption {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 600px) {
+    main { padding: 1.5rem 1rem 3rem; }
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+</style>
