@@ -70,19 +70,70 @@ const formattedDate = formatShootDate(shoot!);
     </header>
 
     <div class="grid">
-      {photos.map(photo => (
+      {photos.map((photo, i) => (
         <figure>
-          <a href={photo.src} target="_blank" rel="noopener" class="photo-link">
-            <div class="photo-wrap">
-              <img src={photo.src} alt={photo.caption} loading="lazy" />
-            </div>
-          </a>
+          <button class="photo-btn" data-index={i} aria-label={`View ${photo.caption}`}>
+            <img src={photo.src} alt={photo.caption} loading="lazy" class="thumb" />
+          </button>
           <figcaption>{photo.caption}</figcaption>
         </figure>
       ))}
     </div>
   </main>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="lb-backdrop"></div>
+    <button class="lb-prev" aria-label="Previous">&#8249;</button>
+    <div class="lb-stage">
+      <img id="lb-img" src="" alt="" class="lb-image" />
+    </div>
+    <button class="lb-next" aria-label="Next">&#8250;</button>
+    <button class="lb-close" aria-label="Close">&#215;</button>
+    <p class="lb-caption" id="lb-caption"></p>
+  </div>
 </Layout>
+
+<script define:vars={{ photoList: photos }}>
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbCaption = document.getElementById('lb-caption');
+  let current = 0;
+
+  function show(index) {
+    current = ((index % photoList.length) + photoList.length) % photoList.length;
+    lbImg.src = photoList[current].src;
+    lbImg.alt = photoList[current].caption;
+    lbCaption.textContent = photoList[current].caption;
+  }
+
+  function open(index) {
+    show(index);
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    lbImg.src = '';
+  }
+
+  document.querySelectorAll('.photo-btn').forEach(btn => {
+    btn.addEventListener('click', () => open(Number(btn.dataset.index)));
+  });
+
+  document.querySelector('.lb-prev').addEventListener('click', e => { e.stopPropagation(); show(current - 1); });
+  document.querySelector('.lb-next').addEventListener('click', e => { e.stopPropagation(); show(current + 1); });
+  document.querySelector('.lb-close').addEventListener('click', close);
+  document.querySelector('.lb-backdrop').addEventListener('click', close);
+
+  document.addEventListener('keydown', e => {
+    if (lightbox.getAttribute('aria-hidden') === 'true') return;
+    if (e.key === 'ArrowLeft') show(current - 1);
+    if (e.key === 'ArrowRight') show(current + 1);
+    if (e.key === 'Escape') close();
+  });
+</script>
 
 <style>
   main {
@@ -91,9 +142,7 @@ const formattedDate = formatShootDate(shoot!);
     padding: 2.5rem 1.5rem 5rem;
   }
 
-  nav {
-    margin-bottom: 2.5rem;
-  }
+  nav { margin-bottom: 2.5rem; }
 
   .back {
     font-size: 0.8rem;
@@ -104,9 +153,7 @@ const formattedDate = formatShootDate(shoot!);
 
   .back:hover { color: var(--text); }
 
-  header {
-    margin-bottom: 2.5rem;
-  }
+  header { margin-bottom: 2.5rem; }
 
   h1 {
     font-size: clamp(1.4rem, 3vw, 2rem);
@@ -135,23 +182,27 @@ const formattedDate = formatShootDate(shoot!);
     gap: 0.45rem;
   }
 
-  .photo-link {
+  .photo-btn {
     display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
     overflow: hidden;
   }
 
-  .photo-wrap {
-    aspect-ratio: 3 / 2;
-    overflow: hidden;
-    background: var(--surface);
+  /* Override global img rule for gallery thumbnails */
+  .photo-btn .thumb {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: unset;
+    transition: transform 0.4s ease;
   }
 
-  .photo-wrap img {
-    transition: transform 0.45s ease;
-  }
-
-  .photo-link:hover .photo-wrap img {
-    transform: scale(1.03);
+  .photo-btn:hover .thumb {
+    transform: scale(1.02);
   }
 
   figcaption {
@@ -160,11 +211,111 @@ const formattedDate = formatShootDate(shoot!);
     letter-spacing: 0.04em;
   }
 
+  /* ── Lightbox ── */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox[aria-hidden="true"] {
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .lightbox[aria-hidden="false"] {
+    pointer-events: all;
+    visibility: visible;
+  }
+
+  .lb-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+  }
+
+  .lb-stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 90vw;
+    max-height: 88vh;
+  }
+
+  /* Override global img rule for lightbox */
+  .lb-image {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 88vh;
+    object-fit: contain;
+  }
+
+  .lb-prev,
+  .lb-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.07);
+    border: none;
+    color: #fff;
+    font-size: 3.5rem;
+    line-height: 1;
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+  }
+
+  .lb-prev:hover,
+  .lb-next:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .lb-prev { left: 0.75rem; }
+  .lb-next { right: 0.75rem; }
+
+  .lb-close {
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    z-index: 3;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 2.2rem;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .lb-close:hover { color: #fff; }
+
+  .lb-caption {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
   @media (max-width: 600px) {
     main { padding: 1.5rem 1rem 3rem; }
-    .grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
+    .grid { grid-template-columns: 1fr; gap: 1rem; }
+    .lb-prev { left: 0; font-size: 2.5rem; padding: 0.5rem 0.85rem; }
+    .lb-next { right: 0; font-size: 2.5rem; padding: 0.5rem 0.85rem; }
   }
 </style>
