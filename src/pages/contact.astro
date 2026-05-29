@@ -14,17 +14,13 @@ import Layout from '../layouts/Layout.astro';
     </header>
 
     <form
-      name="contact"
       method="POST"
-      data-netlify="true"
-      netlify-honeypot="bot-field"
+      action="https://formspree.io/f/REPLACE_WITH_YOUR_ID"
       class="contact-form"
-      action="/contact-success"
     >
-      <input type="hidden" name="form-name" value="contact" />
-      <p class="sr-only">
-        <label>Do not fill this out: <input name="bot-field" /></label>
-      </p>
+      <input type="hidden" name="_subject" value="New message from samuellippman.com" />
+      <input type="hidden" name="_next" value="https://samuellippman.com/contact-success" />
+      <input type="text" name="_gotcha" style="display:none" />
 
       <div class="field">
         <label for="email">Your email</label>
@@ -165,15 +161,6 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .submit:hover { opacity: 0.85; }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
 
   @media (max-width: 480px) {
     main { padding: 2rem 1rem 4rem; }
