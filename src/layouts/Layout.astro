@@ -39,9 +39,36 @@ const { title, description = 'Drone photography by Samuel Lippman' } = Astro.pro
       a { color: inherit; text-decoration: none; }
 
       img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+      .site-nav {
+        position: fixed;
+        top: 1.25rem;
+        right: 1.5rem;
+        z-index: 200;
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .site-nav a {
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        transition: color 0.2s;
+        padding: 0.35rem 0;
+      }
+
+      .site-nav a:hover,
+      .site-nav a[data-active] {
+        color: var(--accent);
+      }
     </style>
   </head>
   <body>
+    <nav class="site-nav">
+      <a href="/about" {...Astro.url.pathname === '/about' ? { 'data-active': '' } : {}}>About Me</a>
+      <a href="/contact" {...Astro.url.pathname === '/contact' ? { 'data-active': '' } : {}}>Contact</a>
+    </nav>
     <slot />
   </body>
 </html>

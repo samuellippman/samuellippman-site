@@ -1,0 +1,123 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About Me — Samuel Lippman">
+  <main>
+    <nav>
+      <a href="/" class="back">← All Shoots</a>
+    </nav>
+
+    <div class="about">
+      <div class="photo-col">
+        <img src="/about-me-picture.jpg" alt="Samuel Lippman" class="portrait" />
+      </div>
+
+      <div class="text-col">
+        <h1>About Me</h1>
+        <p>My name is Samuel Abbott Lippman and I am eleven and from northern New Jersey. I got my first drone when I was seven and that is really where it started for me.</p>
+
+        <h2>How it started</h2>
+        <p>It was just a small toy one with no camera and the battery only lasted about five minutes. That came as a birthday present and I was hooked right away. After that I moved up to a camera drone from Amazon that cost around forty dollars but it never took great pictures or video.</p>
+
+        <h2>My current setup</h2>
+        <p>Now I fly the Skyrover S1 which was a holiday gift. It works a lot like the DJI models in how the controls feel and at the time those were tough to get so this one seemed like a solid choice. The camera is 48 megapixels and it records 4K at 60fps. A charge gives a little over thirty minutes in the air and each uncompressed file is about thirty megabytes. The shots look really good.</p>
+
+        <h2>What I love about it</h2>
+        <p>The more I fly the better I get at smooth moves and picking angles. Drone flying is not just a hobby because it shows you a view most people never see. I think there is always something new to figure out with it though.</p>
+
+        <h2>Contact</h2>
+        <p>If you want to contact me there is a page you will find on the upper right hand corner of the site. Contact reasons include questions about equipment, questions about photography, letting me know you are using my pictures. You can also contact me if you would like me to do a shoot at an event or party of any sort.</p>
+
+        <h2>Photo usage</h2>
+        <p>If you want to use my pictures in any way that may result in the pictures being seen by the public, I ask that you link the picture you used by copying the URL you found the picture or pictures from.</p>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 6rem;
+  }
+
+  nav { margin-bottom: 3rem; }
+
+  .back {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  .back:hover { color: var(--text); }
+
+  .about {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .photo-col { position: sticky; top: 5rem; }
+
+  .portrait {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+    filter: grayscale(15%);
+  }
+
+  .text-col { display: flex; flex-direction: column; gap: 0; }
+
+  h1 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 1.1rem;
+  }
+
+  h2 {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2.25rem;
+    margin-bottom: 0.6rem;
+  }
+
+  p {
+    font-size: 0.95rem;
+    line-height: 1.85;
+    color: var(--text);
+    max-width: 60ch;
+  }
+
+  .email-link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.2s;
+  }
+
+  .email-link:hover { opacity: 0.7; }
+
+  @media (max-width: 720px) {
+    .about {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .photo-col {
+      position: static;
+      max-width: 240px;
+    }
+
+    main { padding: 2rem 1rem 4rem; }
+  }
+</style>

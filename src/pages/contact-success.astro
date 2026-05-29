@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Message Sent — Samuel Lippman">
+  <main>
+    <nav>
+      <a href="/" class="back">← All Shoots</a>
+    </nav>
+
+    <div class="message">
+      <h1>Message sent</h1>
+      <p>Thanks for reaching out. I will get back to you soon.</p>
+      <a href="/" class="home-link">Back to the gallery</a>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 6rem;
+  }
+
+  nav { margin-bottom: 3rem; }
+
+  .back {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  .back:hover { color: var(--text); }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .home-link {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  .home-link:hover { color: var(--text); }
+</style>
