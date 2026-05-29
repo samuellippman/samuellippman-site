@@ -43,10 +43,11 @@ if (existsSync(droneDir)) {
 
   shoots = dateFolders.map(slug => {
     const files = readdirSync(join(droneDir, slug)).filter(isPhoto).sort();
+    const cover = files.find(f => f.replace(/\.[^.]+$/, '').toLowerCase() === 'cover') ?? files[0];
     return {
       slug,
       date: formatShootDate(slug),
-      coverPhoto: files[0] ? `/drone-photos/${slug}/${files[0]}` : null,
+      coverPhoto: cover ? `/drone-photos/${slug}/${cover}` : null,
     };
   });
 }
