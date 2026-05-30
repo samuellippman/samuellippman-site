@@ -33,6 +33,13 @@ import Layout from '../layouts/Layout.astro';
         <p>If you want to use my pictures in any way that may result in the pictures being seen by the public, I ask that you link the picture you used by copying the URL you found the picture or pictures from.</p>
       </div>
     </div>
+
+    <div class="photo-grid">
+      <img src="/about/about-photo-1.jpg" alt="Samuel flying his drone" />
+      <img src="/about/about-photo-2.jpg" alt="Samuel with drone controller" />
+      <img src="/about/about-photo-3.jpg" alt="Samuel with drone controller" />
+      <img src="/about/about-photo-4.jpg" alt="Samuel checking drone footage" />
+    </div>
   </main>
 </Layout>
 
@@ -106,6 +113,28 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .email-link:hover { opacity: 0.7; }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-top: 4rem;
+  }
+
+  .photo-grid img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+  }
+
+  @media (max-width: 720px) {
+    .photo-grid {
+      grid-template-columns: repeat(2, 1fr);
+      margin-top: 2.5rem;
+    }
+  }
 
   @media (max-width: 720px) {
     .about {
