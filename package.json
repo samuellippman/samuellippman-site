@@ -9,6 +9,7 @@
     "compress": "node scripts/compress.mjs"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "astro": "^4.16.0",
     "sharp": "^0.34.5"
   }

@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 import { cpSync, existsSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
@@ -23,5 +24,5 @@ function syncDronePhotos() {
 export default defineConfig({
   site: 'https://samuellippman.com',
   output: 'static',
-  integrations: [syncDronePhotos()],
+  integrations: [sitemap(), syncDronePhotos()],
 });
