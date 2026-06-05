@@ -76,6 +76,7 @@ const { title, description = 'Drone photography by Samuel Lippman' } = Astro.pro
     <nav class="site-nav">
       <a href="/about" {...Astro.url.pathname === '/about' ? { 'data-active': '' } : {}}>About Me</a>
       <a href="/contact" {...Astro.url.pathname === '/contact' ? { 'data-active': '' } : {}}>Contact</a>
+      <a href="https://www.instagram.com/samuel_lippman/" target="_blank" rel="noopener noreferrer">Instagram</a>
     </nav>
     <slot />
   </body>
