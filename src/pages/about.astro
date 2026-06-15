@@ -121,12 +121,27 @@ import Layout from '../layouts/Layout.astro';
   @media (max-width: 720px) {
     .about {
       grid-template-columns: 1fr;
-      gap: 2.5rem;
+      gap: 2rem;
     }
 
     .photo-col {
       position: static;
-      max-width: 240px;
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding-bottom: 0.25rem;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .photo-col::-webkit-scrollbar { display: none; }
+
+    .portrait {
+      width: 160px;
+      height: 200px;
+      flex-shrink: 0;
+      object-fit: cover;
     }
 
     main { padding: 2rem 1rem 4rem; }

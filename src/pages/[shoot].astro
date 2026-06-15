@@ -133,6 +133,16 @@ const formattedDate = formatShootDate(shoot!);
     if (e.key === 'ArrowRight') show(current + 1);
     if (e.key === 'Escape') close();
   });
+
+  let touchStartX = 0;
+  lightbox.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  lightbox.addEventListener('touchend', e => {
+    if (lightbox.getAttribute('aria-hidden') === 'true') return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) dx < 0 ? show(current + 1) : show(current - 1);
+  }, { passive: true });
 </script>
 
 <style>
@@ -313,9 +323,10 @@ const formattedDate = formatShootDate(shoot!);
   }
 
   @media (max-width: 600px) {
-    main { padding: 1.5rem 1rem 3rem; }
+    main { padding: 3.5rem 1rem 3rem; }
     .grid { grid-template-columns: 1fr; gap: 1rem; }
-    .lb-prev { left: 0; font-size: 2.5rem; padding: 0.5rem 0.85rem; }
-    .lb-next { right: 0; font-size: 2.5rem; padding: 0.5rem 0.85rem; }
+    .lb-prev { left: 0; font-size: 2.5rem; padding: 0.75rem 1rem; }
+    .lb-next { right: 0; font-size: 2.5rem; padding: 0.75rem 1rem; }
+    .lb-close { top: 0.75rem; right: 0.75rem; font-size: 2rem; padding: 0.5rem; }
   }
 </style>

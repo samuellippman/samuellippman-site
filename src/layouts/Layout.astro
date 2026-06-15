@@ -70,6 +70,18 @@ const { title, description = 'Drone photography by Samuel Lippman' } = Astro.pro
       .site-nav a[data-active] {
         color: var(--accent);
       }
+
+      @media (max-width: 480px) {
+        .site-nav {
+          gap: 1rem;
+          right: 1rem;
+          top: 0.9rem;
+        }
+        .site-nav a {
+          padding: 0.5rem 0;
+          font-size: 0.7rem;
+        }
+      }
     </style>
   </head>
   <body>
