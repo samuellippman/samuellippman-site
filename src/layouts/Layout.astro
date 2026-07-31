@@ -50,7 +50,7 @@ const { title, description = 'Drone photography by Samuel Lippman' } = Astro.pro
 
       .site-nav {
         position: fixed;
-        top: 1.25rem;
+        top: 3.25rem;
         right: 1.5rem;
         z-index: 200;
         display: flex;
@@ -71,11 +71,27 @@ const { title, description = 'Drone photography by Samuel Lippman' } = Astro.pro
         color: var(--accent);
       }
 
+      .site-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 300;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        text-align: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
       @media (max-width: 480px) {
         .site-nav {
           gap: 1rem;
           right: 1rem;
-          top: 0.9rem;
+          top: 2.9rem;
         }
         .site-nav a {
           padding: 0.5rem 0;
@@ -85,6 +101,7 @@ const { title, description = 'Drone photography by Samuel Lippman' } = Astro.pro
     </style>
   </head>
   <body>
+    <div class="site-banner">More shoots coming soon!</div>
     <nav class="site-nav">
       <a href="/about" {...Astro.url.pathname === '/about' ? { 'data-active': '' } : {}}>About Me</a>
       <a href="/contact" {...Astro.url.pathname === '/contact' ? { 'data-active': '' } : {}}>Contact</a>
