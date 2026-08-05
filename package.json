@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "compress": "node scripts/compress.mjs"
+    "compress": "node scripts/compress.mjs",
+    "upload-shoot": "node scripts/upload-shoot.mjs"
   },
   "dependencies": {
     "astro": "^4.16.0",
