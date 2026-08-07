@@ -11,13 +11,32 @@ function isPhoto(filename: string): boolean {
 }
 
 const DATE_FOLDER_RE = /^(\d{2})-(\d{2})-(\d{2})$/;
+const CAM_TIMESTAMP_RE = /^CAM_(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/;
 
-// Newest-first. Folders still named as dates (MM-DD-YY) sort by that exact date —
-// more accurate than git history, since several were bulk-imported in one commit.
-// Folders with descriptive names (no date to parse) fall back to the shoot's
-// earliest git commit date, which — unlike filesystem timestamps — survives a
-// fresh clone/pull on any machine.
-function getSortTimestamp(slug: string, dirPath: string): number {
+// Earliest capture timestamp embedded in the drone's own filenames (CAM_YYYYMMDDHHMMSS_...).
+// This is the most reliable date signal: it travels with the photo files themselves,
+// so it survives folder renames and re-cloning the repo on any machine.
+function getEarliestCamTimestamp(photoFiles: string[]): number | null {
+  let earliest: number | null = null;
+  for (const file of photoFiles) {
+    const m = file.match(CAM_TIMESTAMP_RE);
+    if (!m) continue;
+    const [, yyyy, mm, dd, hh, mi, ss] = m;
+    const t = new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(mi), Number(ss)).getTime();
+    if (earliest === null || t < earliest) earliest = t;
+  }
+  return earliest;
+}
+
+// Newest-first. Preference order:
+// 1. Earliest CAM_ timestamp embedded in the shoot's own photo filenames (most reliable).
+// 2. Folder name, if it's still in MM-DD-YY format.
+// 3. Shoot's earliest git commit date (survives re-cloning, unlike filesystem timestamps).
+// 4. Filesystem birthtime, as a last resort for an uncommitted folder with no CAM_ photos.
+function getSortTimestamp(slug: string, dirPath: string, photoFiles: string[]): number {
+  const camTimestamp = getEarliestCamTimestamp(photoFiles);
+  if (camTimestamp !== null) return camTimestamp;
+
   const dateMatch = slug.match(DATE_FOLDER_RE);
   if (dateMatch) {
     const [, mm, dd, yy] = dateMatch;
@@ -60,12 +79,17 @@ if (existsSync(droneDir)) {
     try { return statSync(join(droneDir, e)).isDirectory(); } catch { return false; }
   });
 
-  shootFolders.sort((a, b) =>
-    getSortTimestamp(b, join(droneDir, b)) - getSortTimestamp(a, join(droneDir, a))
+  const withPhotos = shootFolders.map(slug => ({
+    slug,
+    files: readdirSync(join(droneDir, slug)).filter(isPhoto).sort(),
+  }));
+
+  withPhotos.sort((a, b) =>
+    getSortTimestamp(b.slug, join(droneDir, b.slug), b.files) -
+    getSortTimestamp(a.slug, join(droneDir, a.slug), a.files)
   );
 
-  shoots = shootFolders.map(slug => {
-    const files = readdirSync(join(droneDir, slug)).filter(isPhoto).sort();
+  shoots = withPhotos.map(({ slug, files }) => {
     const cover = files.find(f => f.replace(/\.[^.]+$/, '').toLowerCase() === 'cover') ?? files[0];
     return {
       slug,
