@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { readdirSync, statSync, existsSync } from 'fs';
 import { join, extname } from 'path';
+import { execFileSync } from 'child_process';
 
 const PHOTO_EXTS = new Set(['.jpg', '.jpeg', '.png']);
 
@@ -9,24 +10,44 @@ function isPhoto(filename: string): boolean {
   return PHOTO_EXTS.has(extname(filename).toLowerCase());
 }
 
-function parseShootDate(folder: string): Date {
-  const [mm, dd, yy] = folder.split('-').map(Number);
-  return new Date(2000 + yy, mm - 1, dd);
-}
+const DATE_FOLDER_RE = /^(\d{2})-(\d{2})-(\d{2})$/;
 
-function formatShootDate(folder: string): string {
-  return parseShootDate(folder).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+// Newest-first. Folders still named as dates (MM-DD-YY) sort by that exact date —
+// more accurate than git history, since several were bulk-imported in one commit.
+// Folders with descriptive names (no date to parse) fall back to the shoot's
+// earliest git commit date, which — unlike filesystem timestamps — survives a
+// fresh clone/pull on any machine.
+function getSortTimestamp(slug: string, dirPath: string): number {
+  const dateMatch = slug.match(DATE_FOLDER_RE);
+  if (dateMatch) {
+    const [, mm, dd, yy] = dateMatch;
+    return new Date(2000 + Number(yy), Number(mm) - 1, Number(dd)).getTime();
+  }
+
+  try {
+    const output = execFileSync('git', ['log', '--format=%at', '--', `drone-photos/${slug}`], {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+    }).trim();
+    if (output) {
+      const lines = output.split('\n');
+      return Number(lines[lines.length - 1]) * 1000;
+    }
+  } catch {
+    // not a git repo, git unavailable, or folder not yet committed — fall through
+  }
+  try {
+    return statSync(dirPath).birthtimeMs;
+  } catch {
+    return 0;
+  }
 }
 
 const droneDir = join(process.cwd(), 'public', 'drone-photos');
 
 interface Shoot {
   slug: string;
-  date: string;
+  name: string;
   coverPhoto: string | null;
 }
 
@@ -34,19 +55,21 @@ let shoots: Shoot[] = [];
 
 if (existsSync(droneDir)) {
   const entries = readdirSync(droneDir);
-  const dateFolders = entries.filter(e => {
-    if (!/^\d{2}-\d{2}-\d{2}$/.test(e)) return false;
+  const shootFolders = entries.filter(e => {
+    if (e.startsWith('.')) return false;
     try { return statSync(join(droneDir, e)).isDirectory(); } catch { return false; }
   });
 
-  dateFolders.sort((a, b) => parseShootDate(b).getTime() - parseShootDate(a).getTime());
+  shootFolders.sort((a, b) =>
+    getSortTimestamp(b, join(droneDir, b)) - getSortTimestamp(a, join(droneDir, a))
+  );
 
-  shoots = dateFolders.map(slug => {
+  shoots = shootFolders.map(slug => {
     const files = readdirSync(join(droneDir, slug)).filter(isPhoto).sort();
     const cover = files.find(f => f.replace(/\.[^.]+$/, '').toLowerCase() === 'cover') ?? files[0];
     return {
       slug,
-      date: formatShootDate(slug),
+      name: slug,
       coverPhoto: cover ? `/drone-photos/${slug}/${cover}` : null,
     };
   });
@@ -68,12 +91,12 @@ if (existsSync(droneDir)) {
           <a href={`/${shoot.slug}`} class="card">
             <div class="cover">
               {shoot.coverPhoto
-                ? <img src={shoot.coverPhoto} alt={shoot.date} loading="lazy" />
+                ? <img src={shoot.coverPhoto} alt={shoot.name} loading="lazy" />
                 : <div class="no-photo" />
               }
             </div>
             <div class="card-info">
-              <span class="card-date">{shoot.date}</span>
+              <span class="card-date">{shoot.name}</span>
             </div>
           </a>
         ))}
