@@ -13,7 +13,7 @@ $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
 
 $label = New-Object System.Windows.Forms.Label
-$label.Text = 'Shoot folder (named MM-DD-YY):'
+$label.Text = "Shoot folder (name is used as-is on the site; avoid '#'):"
 $label.Location = New-Object System.Drawing.Point(10, 15)
 $label.AutoSize = $true
 $form.Controls.Add($label)
@@ -52,7 +52,7 @@ function Append-Log([string]$text) {
 
 $browseButton.Add_Click({
   $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-  $dialog.Description = 'Select the shoot folder (named MM-DD-YY)'
+  $dialog.Description = "Select the shoot folder (its name is used as-is on the site; avoid '#')"
   if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
     $pathBox.Text = $dialog.SelectedPath
   }

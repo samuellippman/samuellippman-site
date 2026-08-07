@@ -5,7 +5,9 @@ import { execSync } from 'child_process';
 import { compressFile, PHOTO_EXTS } from './lib/compress-image.mjs';
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
-const SHOOT_NAME_RE = /^\d{2}-\d{2}-\d{2}$/;
+// '#' breaks the site's build (Astro's static-file cleanup parses paths as URLs,
+// where '#' starts a fragment and truncates the folder name).
+const INVALID_NAME_CHARS_RE = /#/;
 
 function git(cmd) {
   return execSync(`git ${cmd}`, { cwd: ROOT, encoding: 'utf8' });
@@ -25,8 +27,8 @@ if (!existsSync(sourcePath) || !statSync(sourcePath).isDirectory()) {
 }
 
 const shootName = basename(sourcePath);
-if (!SHOOT_NAME_RE.test(shootName)) {
-  fail(`Folder name "${shootName}" must be in MM-DD-YY format (e.g. 06-25-26). Rename the source folder and try again.`);
+if (INVALID_NAME_CHARS_RE.test(shootName)) {
+  fail(`Folder name "${shootName}" cannot contain "#" — it breaks the site's build. Rename the source folder and try again.`);
 }
 
 const destDir = join(ROOT, 'drone-photos', shootName);
