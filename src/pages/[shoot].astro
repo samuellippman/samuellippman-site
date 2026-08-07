@@ -135,11 +135,21 @@ const formattedDate = formatShootDate(shoot!);
   });
 
   let touchStartX = 0;
+  let isMultiTouch = false;
   lightbox.addEventListener('touchstart', e => {
+    if (e.touches.length > 1) { isMultiTouch = true; return; }
+    isMultiTouch = false;
     touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  lightbox.addEventListener('touchmove', e => {
+    if (e.touches.length > 1) isMultiTouch = true;
   }, { passive: true });
   lightbox.addEventListener('touchend', e => {
     if (lightbox.getAttribute('aria-hidden') === 'true') return;
+    if (isMultiTouch) {
+      if (e.touches.length === 0) isMultiTouch = false;
+      return;
+    }
     const dx = e.changedTouches[0].clientX - touchStartX;
     if (Math.abs(dx) > 50) dx < 0 ? show(current + 1) : show(current - 1);
   }, { passive: true });
